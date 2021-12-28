@@ -22,6 +22,7 @@
 #include "components/ble/MotionService.h"
 #include "components/ble/weather/WeatherService.h"
 #include "components/fs/FS.h"
+#include "components/ble/FSService.h"
 
 namespace Pinetime {
   namespace Drivers {
@@ -109,6 +110,7 @@ namespace Pinetime {
       ImmediateAlertService immediateAlertService;
       HeartRateService heartRateService;
       MotionService motionService;
+      FSService fsService;
       ServiceDiscovery serviceDiscovery;
 
       uint8_t addrType;

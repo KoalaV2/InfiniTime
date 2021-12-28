@@ -30,7 +30,7 @@ NimbleController::NimbleController(Pinetime::System::SystemTask& systemTask,
                                    Pinetime::Drivers::SpiNorFlash& spiNorFlash,
                                    Controllers::HeartRateController& heartRateController,
                                    Controllers::MotionController& motionController,
-                                   Pinetime::Controllers::FS& fs)
+                                   Controllers::FS& fs)
   : systemTask {systemTask},
     bleController {bleController},
     dateTimeController {dateTimeController},
@@ -50,6 +50,7 @@ NimbleController::NimbleController(Pinetime::System::SystemTask& systemTask,
     immediateAlertService {systemTask, notificationManager},
     heartRateService {systemTask, heartRateController},
     motionService {systemTask, motionController},
+    fsService {systemTask, fs},
     serviceDiscovery({&currentTimeClient, &alertNotificationClient}) {
 }
 
@@ -97,6 +98,7 @@ void NimbleController::Init() {
   immediateAlertService.Init();
   heartRateService.Init();
   motionService.Init();
+  fsService.Init();
 
   int rc;
   rc = ble_hs_util_ensure_addr(0);
@@ -132,9 +134,7 @@ void NimbleController::Init() {
 
   RestoreBond();
 
-  if (!ble_gap_adv_active() && !bleController.IsConnected()) {
-    StartAdvertising();
-  }
+  StartAdvertising();
 }
 
 void NimbleController::StartAdvertising() {
@@ -272,7 +272,7 @@ int NimbleController::OnGAPEvent(ble_gap_event* event) {
        * display capability only so we only handle the "display" action here.
        *
        * Standards insist that the rand() PRNG be deterministic.
-       * Use the nimble TRNG here since rand() is predictable.
+       * Use the tinycrypt prng here since rand() is predictable.
        */
       NRF_LOG_INFO("Security event : BLE_GAP_EVENT_PASSKEY_ACTION");
       if (event->passkey.params.action == BLE_SM_IOACT_DISP) {
