@@ -3,21 +3,14 @@
 # Based on https://github.com/JF002/InfiniTime/blob/master/doc/buildAndProgram.md
 # and https://github.com/JF002/InfiniTime/blob/master/bootloader/README.md
 
-# Name of this Workflow
 name: Build PineTime Firmware
 
-# When to run this Workflow...
 on:
-
-  # Run this Workflow when files are updated (Pushed) in the "master" and "develop" Branch
   push:
     branches: [ master, develop ]
-
-  # Also run this Workflow when a Pull Request is created or updated in the "master" and "develop" Branch
   pull_request:
     branches: [ master, develop ]
 
-# Steps to run for the Workflow
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,17 +31,17 @@ jobs:
         shell: bash
         env:
           SOURCES_DIR: .
-        run: |
-          /opt/build.sh all
+        run: /opt/build.sh all
+      # Unzip the package because Upload Artifact will zip up the files
+      - name: Unzip DFU package
+        run: unzip ./build/output/pinetime-mcuboot-app-dfu-*.zip -d ./build/output/pinetime-mcuboot-app-dfu
       - name: Upload DFU artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: InfiniTime DFU file
-          path: |
-            ./build/output/pinetime-mcuboot-app-dfu-*.zip
+          name: InfiniTime DFU ${{ github.head_ref }}
+          path: ./build/output/pinetime-mcuboot-app-dfu/*
       - name: Upload MCUBoot image artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: InfiniTime MCUBoot image file
-          path: |
-            ./build/output/pinetime-mcuboot-app-image-*.bin
+          name: InfiniTime MCUBoot image ${{ github.head_ref }}
+          path: ./build/output/pinetime-mcuboot-app-image-*.bin
