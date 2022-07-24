@@ -1,1 +1,1 @@
-docker run --rm -it -v $(pwd):/sources pfeerick/infinitime-build
+docker run --rm -it -v $(pwd):/sources infinitime/infinitime-build
