@@ -477,7 +477,7 @@ list(APPEND SOURCE_FILES
         FreeRTOS/port_cmsis.c
 
         displayapp/LittleVgl.cpp
-        displayapp/lv_pinetime_theme.c
+        displayapp/InfiniTimeTheme.cpp
 
         systemtask/SystemTask.cpp
         systemtask/SystemMonitor.cpp
@@ -663,7 +663,7 @@ set(INCLUDE_FILES
         libs/date/include/date/ptz.h
         libs/date/include/date/tz_private.h
         displayapp/LittleVgl.h
-        displayapp/lv_pinetime_theme.h
+        displayapp/InfiniTimeTheme.h
         systemtask/SystemTask.h
         systemtask/SystemMonitor.h
         displayapp/screens/Symbols.h
@@ -810,6 +810,7 @@ elseif(TARGET_DEVICE STREQUAL "MOY-UNK") # P8b mirrored
   add_definitions(-DCLOCK_CONFIG_LF_SRC=0) # RC
   add_definitions(-DMYNEWT_VAL_BLE_LL_SCA=500)
   add_definitions(-DCLOCK_CONFIG_LF_CAL_ENABLED=1)
+  add_definitions(-DDRIVER_DISPLAY_MIRROR)
 else()
   message(FATAL_ERROR "Invalid TARGET_DEVICE")
 endif()
@@ -939,6 +940,10 @@ add_custom_command(TARGET ${EXECUTABLE_NAME}
         COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE_FILE_NAME}.out "${EXECUTABLE_FILE_NAME}.hex"
         COMMENT "post build steps for ${EXECUTABLE_FILE_NAME}")
 
+if(BUILD_RESOURCES)
+  add_dependencies(${EXECUTABLE_NAME} GenerateResources)
+endif()
+
 # Build binary intended to be used by bootloader
 set(EXECUTABLE_MCUBOOT_NAME "pinetime-mcuboot-app")
 set(EXECUTABLE_MCUBOOT_FILE_NAME ${EXECUTABLE_MCUBOOT_NAME}-${pinetime_VERSION_MAJOR}.${pinetime_VERSION_MINOR}.${pinetime_VERSION_PATCH})
@@ -971,6 +976,10 @@ add_custom_command(TARGET ${EXECUTABLE_MCUBOOT_NAME}
         COMMAND ${CMAKE_SOURCE_DIR}/tools/mcuboot/imgtool.py create --align 4 --version 1.0.0 --header-size 32 --slot-size 475136 --pad-header ${EXECUTABLE_MCUBOOT_FILE_NAME}.bin ${IMAGE_MCUBOOT_FILE_NAME_BIN}
         COMMENT "post build steps for ${EXECUTABLE_MCUBOOT_FILE_NAME}"
         )
+
+if(BUILD_RESOURCES)
+  add_dependencies(${EXECUTABLE_MCUBOOT_NAME} GenerateResources)
+endif()
 
 if(BUILD_DFU)
   add_custom_command(TARGET ${EXECUTABLE_MCUBOOT_NAME}
@@ -1124,6 +1133,10 @@ if(BUILD_DFU)
           COMMAND adafruit-nrfutil dfu genpkg --dev-type 0x0052 --application ${IMAGE_MCUBOOT_RECOVERYLOADER_FILE_NAME_HEX} ${DFU_MCUBOOT_RECOVERYLOADER_FILE_NAME}
           COMMENT "post build (DFU) steps for ${EXECUTABLE_MCUBOOT_RECOVERYLOADER_FILE_NAME}"
           )
+endif()
+
+if(BUILD_RESOURCES)
+  add_subdirectory(resources)
 endif()
 
 
